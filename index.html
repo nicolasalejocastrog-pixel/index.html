@@ -3,37 +3,252 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registro de Llegadas</title>
+  <title>Control de Asistencia</title>
+  
+  <!-- Fuente moderna Google Inter e Íconos FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
-    body { font-family: Arial, sans-serif; max-width: 400px; margin: 40px auto; padding: 20px; background-color: #f4f6f9; }
-    .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    h2 { text-align: center; color: #333; margin-top: 0; }
-    label { font-weight: bold; display: block; margin-top: 15px; color: #555; }
-    input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    input[readonly] { background-color: #e9ecef; cursor: not-allowed; }
-    button { width: 100%; padding: 12px; margin-top: 20px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 16px; cursor: pointer; }
-    button:hover { background-color: #218838; }
-    .status { text-align: center; font-weight: bold; margin-top: 15px; white-space: pre-line; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #eef2f3 0%, #8e9eab 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 440px;
+      padding: 35px 30px;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .header .icon-box {
+      width: 60px;
+      height: 60px;
+      background: #e8f0fe;
+      color: #1a73e8;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin-bottom: 12px;
+    }
+
+    .header h2 {
+      font-size: 22px;
+      color: #1e293b;
+      font-weight: 700;
+    }
+
+    .header p {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    /* Reloj en vivo */
+    .clock-container {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .clock-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    .clock-item i {
+      color: #1a73e8;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 15px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 14px 12px 42px;
+      font-size: 14px;
+      color: #1e293b;
+      background-color: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input:focus {
+      background-color: #ffffff;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      background: #1a73e8;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(26, 115, 232, 0.25);
+    }
+
+    button:hover {
+      background: #1557b0;
+      box-shadow: 0 6px 15px rgba(26, 115, 232, 0.35);
+    }
+
+    button:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Mensajes de estado */
+    .status {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .status.success {
+      background-color: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      display: block;
+    }
+
+    .status.error {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      display: block;
+    }
+
+    .status.loading {
+      background-color: #e0f2fe;
+      color: #075985;
+      border: 1px solid #bae6fd;
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h2>Control de Asistencia</h2>
+    <div class="header">
+      <div class="icon-box">
+        <i class="fa-solid fa-user-check"></i>
+      </div>
+      <h2>Control de Asistencia</h2>
+      <p>Ingresa tus datos para registrar tu llegada</p>
+    </div>
+
+    <!-- Reloj y Fecha en Vivo -->
+    <div class="clock-container">
+      <div class="clock-item">
+        <i class="fa-regular fa-calendar"></i>
+        <span id="fechaTexto">--/--/----</span>
+      </div>
+      <div class="clock-item">
+        <i class="fa-regular fa-clock"></i>
+        <span id="horaTexto">--:--:--</span>
+      </div>
+    </div>
+
     <form id="formLlegada">
-      <label for="nombre">Nombre(s):</label>
-      <input type="text" id="nombre" placeholder="Ej. Nicolás" required>
+      <div class="form-group">
+        <label for="nombre">Nombre(s)</label>
+        <div class="input-wrapper">
+          <i class="fa-regular fa-user"></i>
+          <input type="text" id="nombre" placeholder="Ej. Nicolás" required autocomplete="off">
+        </div>
+      </div>
 
-      <label for="apellido">Apellido(s):</label>
-      <input type="text" id="apellido" placeholder="Ej. Castro" required>
+      <div class="form-group">
+        <label for="apellido">Apellido(s)</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-signature"></i>
+          <input type="text" id="apellido" placeholder="Ej. Castro" required autocomplete="off">
+        </div>
+      </div>
 
-      <label for="fecha">Día / Fecha:</label>
-      <input type="text" id="fecha" readonly>
-
-      <label for="hora">Hora de Llegada:</label>
-      <input type="text" id="hora" readonly>
-
-      <button type="submit" id="btnEnviar">Registrar Llegada</button>
+      <button type="submit" id="btnEnviar">
+        <i class="fa-solid fa-paper-plane"></i>
+        <span>Registrar Llegada</span>
+      </button>
     </form>
     
     <div id="mensaje" class="status"></div>
@@ -42,16 +257,19 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzzszA6NNGfCUV8FoF4jM3jcy8xgAFCTctoWblOguIcUvWMVYHEugKXYehC2QrQBEpD/exec";
 
-    // Actualiza la fecha y hora en tiempo real en la pantalla
+    // Actualizador de reloj y fecha
     function actualizarReloj() {
       const ahora = new Date();
-      document.getElementById('fecha').value = ahora.toLocaleDateString('es-CO');
-      document.getElementById('hora').value = ahora.toLocaleTimeString('es-CO');
+      document.getElementById('fechaTexto').innerText = ahora.toLocaleDateString('es-CO', {
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      });
+      document.getElementById('horaTexto').innerText = ahora.toLocaleTimeString('es-CO');
     }
 
     actualizarReloj();
     setInterval(actualizarReloj, 1000);
 
+    // Envío del formulario
     document.getElementById('formLlegada').addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -65,9 +283,11 @@
         nombreCompleto: `${nombre} ${apellido}` 
       };
 
+      // Estado de carga
       btn.disabled = true;
-      mensaje.style.color = "#333";
-      mensaje.innerText = "Guardando en Google Sheets...";
+      btn.querySelector('span').innerText = "Guardando...";
+      mensaje.className = "status loading";
+      mensaje.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando en Google Sheets...';
 
       try {
         const response = await fetch(SCRIPT_URL, {
@@ -78,19 +298,20 @@
         const data = await response.json();
 
         if (data.status === "success") {
-          mensaje.style.color = "green";
-          mensaje.innerText = `¡Registrado con éxito!\nNombre: ${data.nombre}\nDía: ${data.fecha}\nHora: ${data.hora}`;
+          mensaje.className = "status success";
+          mensaje.innerHTML = `<i class="fa-solid fa-circle-check"></i> <strong>¡Registrado con éxito!</strong><br>${data.nombre}<br><small>Fecha: ${data.fecha} | Hora: ${data.hora}</small>`;
           document.getElementById('nombre').value = "";
           document.getElementById('apellido').value = "";
         } else {
-          mensaje.style.color = "red";
-          mensaje.innerText = "Error al registrar.";
+          mensaje.className = "status error";
+          mensaje.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Ocurrió un error al registrar.';
         }
       } catch (err) {
-        mensaje.style.color = "red";
-        mensaje.innerText = "Error de conexión con el servidor.";
+        mensaje.className = "status error";
+        mensaje.innerHTML = '<i class="fa-solid fa-wifi"></i> Error de conexión con el servidor.';
       } finally {
         btn.disabled = false;
+        btn.querySelector('span').innerText = "Registrar Llegada";
       }
     });
   </script>
