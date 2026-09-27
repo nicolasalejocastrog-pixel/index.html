@@ -3,82 +3,117 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Control de Llegadas QR</title>
-  
-  <!-- Librería para generar el código QR -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- Librería para escanear con la cámara del celular -->
-  <script src="https://unpkg.com/html5-qrcode"></script>
-
+  <title>Registro de Llegadas</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 450px; margin: auto; padding: 15px; background: #f8f9fa; }
-    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    input { width: 100%; padding: 10px; margin: 8px 0 15px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; }
-    .btn-scan { background-color: #28a745; margin-top: 10px; }
-    #qrcode { display: flex; justify-content: center; margin-top: 15px; }
-    #reader { width: 100%; margin-top: 15px; }
-    .status { text-align: center; font-weight: bold; margin-top: 15px; }
+    body { 
+      font-family: Arial, sans-serif; 
+      max-width: 400px; 
+      margin: 30px auto; 
+      padding: 20px; 
+      background-color: #f4f6f9; 
+    }
+    .card { 
+      background: white; 
+      padding: 25px; 
+      border-radius: 10px; 
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+    }
+    h2 { 
+      margin-top: 0; 
+      color: #333; 
+      text-align: center; 
+    }
+    label { 
+      font-weight: bold; 
+      display: block; 
+      margin-top: 12px; 
+      color: #555; 
+    }
+    input { 
+      width: 100%; 
+      padding: 10px; 
+      margin-top: 5px; 
+      border: 1px solid #ccc; 
+      border-radius: 5px; 
+      box-sizing: border-box; 
+      font-size: 15px; 
+    }
+    input[readonly] { 
+      background-color: #e9ecef; 
+      cursor: not-allowed; 
+    }
+    button { 
+      width: 100%; 
+      padding: 12px; 
+      margin-top: 20px; 
+      background-color: #007bff; 
+      color: white; 
+      border: none; 
+      border-radius: 5px; 
+      font-size: 16px; 
+      font-weight: bold; 
+      cursor: pointer; 
+    }
+    button:hover { 
+      background-color: #0056b3; 
+    }
+    .status { 
+      margin-top: 15px; 
+      text-align: center; 
+      font-weight: bold; 
+      font-size: 14px; 
+    }
   </style>
 </head>
 <body>
 
-  <!-- SECCIÓN 1: GENERAR EL QR CON NOMBRE -->
   <div class="card">
-    <h2>1. Generar QR Permanente</h2>
-    <form id="formQR">
-      <label for="nombreCompleto">Nombre y Apellidos:</label>
-      <input type="text" id="nombreCompleto" placeholder="Ej. Juan Pérez" required>
-      <button type="submit">Crear Código QR</button>
-    </form>
-    <div id="qrcode"></div>
-  </div>
+    <h2>Registro de Llegada</h2>
+    <form id="formRegistro">
+      <label for="nombre">Nombre(s):</label>
+      <input type="text" id="nombre" placeholder="Ej. Nicolás" required>
 
-  <!-- SECCIÓN 2: ESCANEAR LLEGADA CON EL CELULAR -->
-  <div class="card">
-    <h2>2. Escanear Llegada</h2>
-    <button class="btn-scan" onclick="iniciarCamara()">Abrir Cámara para Escanear</button>
-    <div id="reader"></div>
-    <div id="resultado" class="status"></div>
+      <label for="apellido">Apellido(s):</label>
+      <input type="text" id="apellido" placeholder="Ej. Castro" required>
+
+      <label for="fecha">Fecha y Hora de llegada:</label>
+      <input type="text" id="fecha" readonly>
+
+      <button type="submit" id="btnEnviar">Registrar Llegada</button>
+    </form>
+    
+    <div id="mensaje" class="status"></div>
   </div>
 
   <script>
-    // URL DE TU APPS SCRIPT
+    // URL de tu Google Apps Script
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzzszA6NNGfCUV8FoF4jM3jcy8xgAFCTctoWblOguIcUvWMVYHEugKXYehC2QrQBEpD/exec";
 
-    // GENERAR CÓDIGO QR
-    document.getElementById('formQR').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const nombre = document.getElementById('nombreCompleto').value.trim();
-      const qrcodeContainer = document.getElementById('qrcode');
-      
-      qrcodeContainer.innerHTML = "";
-
-      // Generar el código QR conteniendo directamente el Nombre y Apellido
-      new QRCode(qrcodeContainer, {
-        text: nombre,
-        width: 180,
-        height: 180
-      });
-    });
-
-    // ESCANEAR CON CÁMARA Y REGISTRAR EN GOOGLE SHEETS
-    let html5QrcodeScanner;
-
-    function iniciarCamara() {
-      html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-      html5QrcodeScanner.render(alEscanearQR);
+    // Actualizar fecha y hora automáticamente al cargar
+    function actualizarFechaHora() {
+      const ahora = new Date();
+      document.getElementById('fecha').value = ahora.toLocaleString('es-CO');
     }
+    
+    actualizarFechaHora();
+    setInterval(actualizarFechaHora, 1000); // Mantiene la hora actualizada segundo a segundo
 
-    async function alEscanearQR(textoEscaneado) {
-      html5QrcodeScanner.clear(); // Detener cámara al leer un QR
+    // Enviar datos a Google Sheets
+    document.getElementById('formRegistro').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const btn = document.getElementById('btnEnviar');
+      const mensaje = document.getElementById('mensaje');
       
-      const resDiv = document.getElementById('resultado');
-      resDiv.style.color = "black";
-      resDiv.innerText = "Registrando llegada...";
+      const nombre = document.getElementById('nombre').value.trim();
+      const apellido = document.getElementById('apellido').value.trim();
+      const nombreCompleto = `${nombre} ${apellido}`;
 
-      // Enviar el nombre escaneado a Google Sheets
-      const payload = { nombreCompleto: textoEscaneado };
+      btn.disabled = true;
+      mensaje.style.color = "#333";
+      mensaje.innerText = "Guardando registro...";
+
+      const payload = { nombreCompleto: nombreCompleto };
 
       try {
         const response = await fetch(SCRIPT_URL, {
@@ -89,17 +124,21 @@
         const data = await response.json();
 
         if (data.status === "success") {
-          resDiv.style.color = "green";
-          resDiv.innerText = `¡Llegada registrada!\n${data.nombre}\n${data.hora}`;
+          mensaje.style.color = "green";
+          mensaje.innerText = "¡Llegada registrada exitosamente en Google Sheets!";
+          document.getElementById('nombre').value = "";
+          document.getElementById('apellido').value = "";
         } else {
-          resDiv.style.color = "red";
-          resDiv.innerText = "Error al guardar el registro.";
+          mensaje.style.color = "red";
+          mensaje.innerText = "Error al guardar el registro.";
         }
       } catch (err) {
-        resDiv.style.color = "red";
-        resDiv.innerText = "Error de conexión con el servidor.";
+        mensaje.style.color = "red";
+        mensaje.innerText = "Error de conexión con el servidor.";
+      } finally {
+        btn.disabled = false;
       }
-    }
+    });
   </script>
 
 </body>
