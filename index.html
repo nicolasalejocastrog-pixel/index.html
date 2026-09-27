@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registro de Asistencia</title>
+  <title>Registro de Llegadas</title>
   <style>
     body { font-family: Arial, sans-serif; max-width: 400px; margin: 40px auto; padding: 20px; background-color: #f4f6f9; }
     .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     h2 { text-align: center; color: #333; margin-top: 0; }
     label { font-weight: bold; display: block; margin-top: 15px; color: #555; }
     input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    input[readonly] { background-color: #e9ecef; cursor: not-allowed; }
     button { width: 100%; padding: 12px; margin-top: 20px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 16px; cursor: pointer; }
     button:hover { background-color: #218838; }
-    .status { text-align: center; font-weight: bold; margin-top: 15px; }
+    .status { text-align: center; font-weight: bold; margin-top: 15px; white-space: pre-line; }
   </style>
 </head>
 <body>
@@ -26,6 +27,12 @@
       <label for="apellido">Apellido(s):</label>
       <input type="text" id="apellido" placeholder="Ej. Castro" required>
 
+      <label for="fecha">Día / Fecha:</label>
+      <input type="text" id="fecha" readonly>
+
+      <label for="hora">Hora de Llegada:</label>
+      <input type="text" id="hora" readonly>
+
       <button type="submit" id="btnEnviar">Registrar Llegada</button>
     </form>
     
@@ -33,8 +40,17 @@
   </div>
 
   <script>
-    // URL de tu Google Apps Script
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzzszA6NNGfCUV8FoF4jM3jcy8xgAFCTctoWblOguIcUvWMVYHEugKXYehC2QrQBEpD/exec";
+
+    // Actualiza la fecha y hora en tiempo real en la pantalla
+    function actualizarReloj() {
+      const ahora = new Date();
+      document.getElementById('fecha').value = ahora.toLocaleDateString('es-CO');
+      document.getElementById('hora').value = ahora.toLocaleTimeString('es-CO');
+    }
+
+    actualizarReloj();
+    setInterval(actualizarReloj, 1000);
 
     document.getElementById('formLlegada').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -45,14 +61,13 @@
       const nombre = document.getElementById('nombre').value.trim();
       const apellido = document.getElementById('apellido').value.trim();
       
-      // Une Nombre + Apellido en una sola variable 'nombreCompleto'
       const payload = { 
         nombreCompleto: `${nombre} ${apellido}` 
       };
 
       btn.disabled = true;
       mensaje.style.color = "#333";
-      mensaje.innerText = "Registrando...";
+      mensaje.innerText = "Guardando en Google Sheets...";
 
       try {
         const response = await fetch(SCRIPT_URL, {
@@ -64,12 +79,12 @@
 
         if (data.status === "success") {
           mensaje.style.color = "green";
-          mensaje.innerText = `¡Registrado con éxito!\n${data.nombre}\nHora: ${data.hora}`;
+          mensaje.innerText = `¡Registrado con éxito!\nNombre: ${data.nombre}\nDía: ${data.fecha}\nHora: ${data.hora}`;
           document.getElementById('nombre').value = "";
           document.getElementById('apellido').value = "";
         } else {
           mensaje.style.color = "red";
-          mensaje.innerText = "Error al guardar en la hoja.";
+          mensaje.innerText = "Error al registrar.";
         }
       } catch (err) {
         mensaje.style.color = "red";
