@@ -3,81 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registro de Llegadas</title>
+  <title>Registro de Asistencia</title>
   <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      max-width: 400px; 
-      margin: 30px auto; 
-      padding: 20px; 
-      background-color: #f4f6f9; 
-    }
-    .card { 
-      background: white; 
-      padding: 25px; 
-      border-radius: 10px; 
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-    }
-    h2 { 
-      margin-top: 0; 
-      color: #333; 
-      text-align: center; 
-    }
-    label { 
-      font-weight: bold; 
-      display: block; 
-      margin-top: 12px; 
-      color: #555; 
-    }
-    input { 
-      width: 100%; 
-      padding: 10px; 
-      margin-top: 5px; 
-      border: 1px solid #ccc; 
-      border-radius: 5px; 
-      box-sizing: border-box; 
-      font-size: 15px; 
-    }
-    input[readonly] { 
-      background-color: #e9ecef; 
-      cursor: not-allowed; 
-    }
-    button { 
-      width: 100%; 
-      padding: 12px; 
-      margin-top: 20px; 
-      background-color: #007bff; 
-      color: white; 
-      border: none; 
-      border-radius: 5px; 
-      font-size: 16px; 
-      font-weight: bold; 
-      cursor: pointer; 
-    }
-    button:hover { 
-      background-color: #0056b3; 
-    }
-    .status { 
-      margin-top: 15px; 
-      text-align: center; 
-      font-weight: bold; 
-      font-size: 14px; 
-    }
+    body { font-family: Arial, sans-serif; max-width: 400px; margin: 40px auto; padding: 20px; background-color: #f4f6f9; }
+    .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #333; margin-top: 0; }
+    label { font-weight: bold; display: block; margin-top: 15px; color: #555; }
+    input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    button { width: 100%; padding: 12px; margin-top: 20px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 16px; cursor: pointer; }
+    button:hover { background-color: #218838; }
+    .status { text-align: center; font-weight: bold; margin-top: 15px; }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h2>Registro de Llegada</h2>
-    <form id="formRegistro">
+    <h2>Control de Asistencia</h2>
+    <form id="formLlegada">
       <label for="nombre">Nombre(s):</label>
       <input type="text" id="nombre" placeholder="Ej. Nicolás" required>
 
       <label for="apellido">Apellido(s):</label>
       <input type="text" id="apellido" placeholder="Ej. Castro" required>
-
-      <label for="fecha">Fecha y Hora de llegada:</label>
-      <input type="text" id="fecha" readonly>
 
       <button type="submit" id="btnEnviar">Registrar Llegada</button>
     </form>
@@ -89,17 +36,7 @@
     // URL de tu Google Apps Script
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzzszA6NNGfCUV8FoF4jM3jcy8xgAFCTctoWblOguIcUvWMVYHEugKXYehC2QrQBEpD/exec";
 
-    // Actualizar fecha y hora automáticamente al cargar
-    function actualizarFechaHora() {
-      const ahora = new Date();
-      document.getElementById('fecha').value = ahora.toLocaleString('es-CO');
-    }
-    
-    actualizarFechaHora();
-    setInterval(actualizarFechaHora, 1000); // Mantiene la hora actualizada segundo a segundo
-
-    // Enviar datos a Google Sheets
-    document.getElementById('formRegistro').addEventListener('submit', async (e) => {
+    document.getElementById('formLlegada').addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const btn = document.getElementById('btnEnviar');
@@ -107,13 +44,15 @@
       
       const nombre = document.getElementById('nombre').value.trim();
       const apellido = document.getElementById('apellido').value.trim();
-      const nombreCompleto = `${nombre} ${apellido}`;
+      
+      // Une Nombre + Apellido en una sola variable 'nombreCompleto'
+      const payload = { 
+        nombreCompleto: `${nombre} ${apellido}` 
+      };
 
       btn.disabled = true;
       mensaje.style.color = "#333";
-      mensaje.innerText = "Guardando registro...";
-
-      const payload = { nombreCompleto: nombreCompleto };
+      mensaje.innerText = "Registrando...";
 
       try {
         const response = await fetch(SCRIPT_URL, {
@@ -125,12 +64,12 @@
 
         if (data.status === "success") {
           mensaje.style.color = "green";
-          mensaje.innerText = "¡Llegada registrada exitosamente en Google Sheets!";
+          mensaje.innerText = `¡Registrado con éxito!\n${data.nombre}\nHora: ${data.hora}`;
           document.getElementById('nombre').value = "";
           document.getElementById('apellido').value = "";
         } else {
           mensaje.style.color = "red";
-          mensaje.innerText = "Error al guardar el registro.";
+          mensaje.innerText = "Error al guardar en la hoja.";
         }
       } catch (err) {
         mensaje.style.color = "red";
