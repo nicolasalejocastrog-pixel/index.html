@@ -200,12 +200,12 @@
     <form id="formRegistro">
       <div class="form-group">
         <label for="nombre">Nombre(s)</label>
-        <input type="text" id="nombre" placeholder="nombre en minúscula" required>
+        <input type="text" id="nombre" placeholder="ej. nombre" required>
       </div>
 
       <div class="form-group">
         <label for="apellido">Apellido(s)</label>
-        <input type="text" id="apellido" placeholder=" apellido en minúscula" required>
+        <input type="text" id="apellido" placeholder="ej. APELLIDO" required>
       </div>
 
       <div class="form-group">
@@ -232,15 +232,83 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzzszA6NNGfCUV8FoF4jM3jcy8xgAFCTctoWblOguIcUvWMVYHEugKXYehC2QrQBEpD/exec";
 
-    // Actualiza la fecha y hora en vivo
+    // Función para actualizar fecha y hora
     function actualizarReloj() {
       const ahora = new Date();
-      document.getElementById('lblFecha').innerText = ahora.toLocaleDateString('es-CO');
-      document.getElementById('lblHora').innerText = ahora.toLocaleTimeString('es-CO');
+      document.getElementById('lblFecha').textContent = ahora.toLocaleDateString();
+      document.getElementById('lblHora').textContent = ahora.toLocaleTimeString();
     }
+
+    // Ejecutar inmediatamente para evitar que se muestren las líneas '--:--:--'
     actualizarReloj();
     setInterval(actualizarReloj, 1000);
 
-    // Mostrar/Ocultar el campo personalizado cuando eligen "Otro"
+    // Mostrar/Ocultar campo si eligen "Otro"
     const selectSacramento = document.getElementById('opcionSacramento');
     const campoOtroGrupo = document.getElementById('campoOtroGrupo');
+    const otroTextoInput = document.getElementById('otroTexto');
+
+    selectSacramento.addEventListener('change', () => {
+      if (selectSacramento.value === 'Otro') {
+        campoOtroGrupo.classList.remove('hidden');
+        otroTextoInput.required = true;
+      } else {
+        campoOtroGrupo.classList.add('hidden');
+        otroTextoInput.required = false;
+        otroTextoInput.value = '';
+      }
+    });
+
+    // Envío del formulario
+    document.getElementById('formRegistro').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const btn = document.getElementById('btnEnviar');
+      const mensaje = document.getElementById('mensaje');
+
+      const nombre = document.getElementById('nombre').value.trim();
+      const apellido = document.getElementById('apellido').value.trim();
+      
+      let motivo = selectSacramento.value;
+      if (motivo === 'Otro') {
+        motivo = otroTextoInput.value.trim();
+      }
+
+      const payload = {
+        nombreCompleto: `${nombre} ${apellido}`,
+        motivo: motivo
+      };
+
+      btn.disabled = true;
+      mensaje.className = "status-msg loading";
+      mensaje.innerText = "Guardando en Google Sheets...";
+
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        mensaje.className = "status-msg success";
+        mensaje.innerText = `¡Registrado con éxito! 😼\n\nNombre: ${nombre} ${apellido}\nMotivo: ${motivo}`;
+        
+        // Limpiar formulario
+        document.getElementById('formRegistro').reset();
+        campoOtroGrupo.classList.add('hidden');
+        otroTextoInput.required = false;
+
+      } catch (err) {
+        mensaje.className = "status-msg error";
+        mensaje.innerText = "Error de conexión con el servidor.";
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+
+</body>
+</html>
