@@ -1,40 +1,314 @@
-function doPost(e) {
-  var lock = LockService.getScriptLock();
-  lock.tryLock(10000);
-
-  try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var data = JSON.parse(e.postData.contents);
-    var sheetLlegadas = ss.getSheetByName("Llegadas") || ss.insertSheet("Llegadas");
-
-    if (sheetLlegadas.getLastRow() === 0) {
-      sheetLlegadas.appendRow(["Nombre y Apellido", "Sacramento / Motivo", "Día / Fecha", "Hora"]);
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Asistencia 😼</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-color: #f3f4f6;
+      --card-bg: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --focus-ring: rgba(79, 70, 229, 0.2);
     }
 
-    var fechaActual = new Date();
-    var timeZone = ss.getSpreadsheetTimeZone();
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
 
-    var diaFecha = Utilities.formatDate(fechaActual, timeZone, "dd/MM/yyyy");
-    var horaExacta = Utilities.formatDate(fechaActual, timeZone, "HH:mm:ss");
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
 
-    sheetLlegadas.appendRow([data.nombreCompleto, data.motivo, diaFecha, horaExacta]);
+    .container {
+      width: 100%;
+      max-width: 440px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      padding: 32px 24px;
+      border: 1px solid rgba(229, 231, 235, 0.8);
+    }
 
-    return responseJSON({
-      status: "success",
-      nombre: data.nombreCompleto,
-      motivo: data.motivo,
-      fecha: diaFecha,
-      hora: horaExacta
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .header h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .header p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .time-badge {
+      display: flex;
+      justify-content: space-between;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      color: #374151;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .time-badge span strong {
+      color: var(--primary);
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #374151;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background-color: #fff;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--focus-ring);
+    }
+
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%6b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    button:active {
+      transform: scale(0.99);
+    }
+
+    button:disabled {
+      background-color: #a5b4fc;
+      cursor: not-allowed;
+    }
+
+    .status-msg {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      text-align: center;
+      font-weight: 500;
+      display: none;
+      white-space: pre-line;
+    }
+
+    .status-msg.success {
+      display: block;
+      background-color: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .status-msg.error {
+      display: block;
+      background-color: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .status-msg.loading {
+      display: block;
+      background-color: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h2>Control de Asistencia 😼</h2>
+      <p>Registra tu llegada de forma rápida</p>
+    </div>
+
+    <div class="time-badge">
+      <span>Día: <strong id="lblFecha">--/--/----</strong></span>
+      <span>Hora: <strong id="lblHora">--:--:--</strong></span>
+    </div>
+
+    <form id="formRegistro">
+      <div class="form-group">
+        <label for="nombre">Nombre(s)</label>
+        <input type="text" id="nombre" placeholder="ej. nicolás" required>
+      </div>
+
+      <div class="form-group">
+        <label for="apellido">Apellido(s)</label>
+        <input type="text" id="apellido" placeholder="ej. castro" required>
+      </div>
+
+      <div class="form-group">
+        <label for="opcionSacramento">Sacramento / Motivo</label>
+        <select id="opcionSacramento" required>
+          <option value="" disabled selected>selecciona una opción...</option>
+          <option value="Primera comunión">Primera comunión</option>
+          <option value="Confirmación">Confirmación</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+
+      <div class="form-group hidden" id="campoOtroGrupo">
+        <label for="otroTexto">¿Qué estás haciendo?</label>
+        <input type="text" id="otroTexto" placeholder="ej. catequista, acompañante, etc.">
+      </div>
+
+      <button type="submit" id="btnEnviar">Registrar Llegada 😼</button>
+    </form>
+
+    <div id="mensaje" class="status-msg"></div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzzszA6NNGfCUV8FoF4jM3jcy8xgAFCTctoWblOguIcUvWMVYHEugKXYehC2QrQBEpD/exec";
+
+    // Actualiza la fecha y hora en vivo
+    function actualizarReloj() {
+      const ahora = new Date();
+      document.getElementById('lblFecha').innerText = ahora.toLocaleDateString('es-CO');
+      document.getElementById('lblHora').innerText = ahora.toLocaleTimeString('es-CO');
+    }
+    actualizarReloj();
+    setInterval(actualizarReloj, 1000);
+
+    // Mostrar/Ocultar el campo personalizado cuando eligen "Otro"
+    const selectSacramento = document.getElementById('opcionSacramento');
+    const campoOtroGrupo = document.getElementById('campoOtroGrupo');
+    const otroTextoInput = document.getElementById('otroTexto');
+
+    selectSacramento.addEventListener('change', () => {
+      if (selectSacramento.value === 'Otro') {
+        campoOtroGrupo.classList.remove('hidden');
+        otroTextoInput.required = true;
+      } else {
+        campoOtroGrupo.classList.add('hidden');
+        otroTextoInput.required = false;
+        otroTextoInput.value = '';
+      }
     });
 
-  } catch (error) {
-    return responseJSON({ status: "error", message: error.toString() });
-  } finally {
-    lock.releaseLock();
-  }
-}
+    // Enviar datos al script
+    document.getElementById('formRegistro').addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-function responseJSON(data) {
-  return ContentService.createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
-}
+      const btn = document.getElementById('btnEnviar');
+      const mensaje = document.getElementById('mensaje');
+
+      const nombre = document.getElementById('nombre').value.trim();
+      const apellido = document.getElementById('apellido').value.trim();
+      
+      let motivo = selectSacramento.value;
+      if (motivo === 'Otro') {
+        motivo = otroTextoInput.value.trim();
+      }
+
+      const payload = {
+        nombreCompleto: `${nombre} ${apellido}`,
+        motivo: motivo
+      };
+
+      btn.disabled = true;
+      mensaje.className = "status-msg loading";
+      mensaje.innerText = "Guardando en Google Sheets...";
+
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (data.status === "success") {
+          mensaje.className = "status-msg success";
+          mensaje.innerText = `¡Registrado con éxito! 😼\n\nNombre: ${data.nombre}\nMotivo: ${data.motivo}\nHora: ${data.hora}`;
+          
+          // Limpiar formulario
+          document.getElementById('formRegistro').reset();
+          campoOtroGrupo.classList.add('hidden');
+          otroTextoInput.required = false;
+        } else {
+          mensaje.className = "status-msg error";
+          mensaje.innerText = "Error al guardar el registro.";
+        }
+      } catch (err) {
+        mensaje.className = "status-msg error";
+        mensaje.innerText = "Error de conexión con el servidor.";
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+
+</body>
+</html>
