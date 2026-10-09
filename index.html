@@ -4,93 +4,82 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Control de Asistencia</title>
-  
-  <!-- Fuente moderna Google Inter e Íconos FontAwesome -->
+  <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  
   <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-color: #f3f4f6;
+      --card-bg: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --focus-ring: rgba(79, 70, 229, 0.2);
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
     body {
-      background: linear-gradient(135deg, #eef2f3 0%, #8e9eab 100%);
-      min-height: 100vh;
+      background-color: var(--bg-color);
+      color: var(--text-main);
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
+      min-height: 100vh;
       padding: 20px;
     }
 
-    .card {
-      background: #ffffff;
+    .container {
       width: 100%;
       max-width: 440px;
-      padding: 35px 30px;
-      border-radius: 20px;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease;
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      padding: 32px 24px;
+      border: 1px solid rgba(229, 231, 235, 0.8);
     }
 
     .header {
       text-align: center;
-      margin-bottom: 25px;
-    }
-
-    .header .icon-box {
-      width: 60px;
-      height: 60px;
-      background: #e8f0fe;
-      color: #1a73e8;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 26px;
-      margin-bottom: 12px;
+      margin-bottom: 24px;
     }
 
     .header h2 {
-      font-size: 22px;
-      color: #1e293b;
+      font-size: 1.5rem;
       font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
     }
 
     .header p {
-      font-size: 13px;
-      color: #64748b;
-      margin-top: 4px;
+      font-size: 0.875rem;
+      color: var(--text-muted);
     }
 
-    /* Reloj en vivo */
-    .clock-container {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 12px 15px;
+    .time-badge {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 22px;
-    }
-
-    .clock-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: #475569;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      color: #374151;
+      margin-bottom: 20px;
       font-weight: 500;
     }
 
-    .clock-item i {
-      color: #1a73e8;
+    .time-badge span strong {
+      color: var(--primary);
     }
 
     .form-group {
@@ -99,195 +88,199 @@
 
     label {
       display: block;
-      font-size: 13px;
+      font-size: 0.875rem;
       font-weight: 600;
-      color: #334155;
       margin-bottom: 6px;
+      color: #374151;
     }
 
-    .input-wrapper {
-      position: relative;
-    }
-
-    .input-wrapper i {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #94a3b8;
-      font-size: 15px;
-    }
-
-    input {
+    input, select {
       width: 100%;
-      padding: 12px 14px 12px 42px;
-      font-size: 14px;
-      color: #1e293b;
-      background-color: #f8fafc;
-      border: 1.5px solid #e2e8f0;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
       border-radius: 10px;
-      outline: none;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background-color: #fff;
       transition: all 0.2s ease;
+      outline: none;
     }
 
-    input:focus {
-      background-color: #ffffff;
-      border-color: #1a73e8;
-      box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--focus-ring);
+    }
+
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%6b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+    }
+
+    .hidden {
+      display: none;
     }
 
     button {
       width: 100%;
       padding: 14px;
-      margin-top: 10px;
-      background: #1a73e8;
-      color: #ffffff;
+      background-color: var(--primary);
+      color: white;
       border: none;
       border-radius: 10px;
-      font-size: 15px;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(26, 115, 232, 0.25);
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      margin-top: 10px;
     }
 
     button:hover {
-      background: #1557b0;
-      box-shadow: 0 6px 15px rgba(26, 115, 232, 0.35);
+      background-color: var(--primary-hover);
+    }
+
+    button:active {
+      transform: scale(0.99);
     }
 
     button:disabled {
-      background: #94a3b8;
+      background-color: #a5b4fc;
       cursor: not-allowed;
-      box-shadow: none;
     }
 
-    /* Mensajes de estado */
-    .status {
+    .status-msg {
       margin-top: 20px;
       padding: 12px;
       border-radius: 10px;
-      font-size: 13px;
-      font-weight: 500;
+      font-size: 0.9rem;
       text-align: center;
+      font-weight: 500;
       display: none;
-      animation: fadeIn 0.3s ease-in-out;
+      white-space: pre-line;
     }
 
-    .status.success {
-      background-color: #d1fae5;
+    .status-msg.success {
+      display: block;
+      background-color: #ecfdf5;
       color: #065f46;
       border: 1px solid #a7f3d0;
-      display: block;
     }
 
-    .status.error {
-      background-color: #fee2e2;
+    .status-msg.error {
+      display: block;
+      background-color: #fef2f2;
       color: #991b1b;
-      border: 1px solid #fca5a5;
-      display: block;
+      border: 1px solid #fecaca;
     }
 
-    .status.loading {
-      background-color: #e0f2fe;
-      color: #075985;
-      border: 1px solid #bae6fd;
+    .status-msg.loading {
       display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-8px); }
-      to { opacity: 1; transform: translateY(0); }
+      background-color: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
     }
   </style>
 </head>
 <body>
 
-  <div class="card">
+  <div class="container">
     <div class="header">
-      <div class="icon-box">
-        <i class="fa-solid fa-user-check"></i>
-      </div>
       <h2>Control de Asistencia</h2>
-      <p>Ingresa tus datos para registrar tu llegada</p>
+      <p>Registra tu llegada de forma rápida</p>
     </div>
 
-    <!-- Reloj y Fecha en Vivo -->
-    <div class="clock-container">
-      <div class="clock-item">
-        <i class="fa-regular fa-calendar"></i>
-        <span id="fechaTexto">--/--/----</span>
-      </div>
-      <div class="clock-item">
-        <i class="fa-regular fa-clock"></i>
-        <span id="horaTexto">--:--:--</span>
-      </div>
+    <div class="time-badge">
+      <span>Día: <strong id="lblFecha">--/--/----</strong></span>
+      <span>Hora: <strong id="lblHora">--:--:--</strong></span>
     </div>
 
-    <form id="formLlegada">
+    <form id="formRegistro">
       <div class="form-group">
         <label for="nombre">Nombre(s)</label>
-        <div class="input-wrapper">
-          <i class="fa-regular fa-user"></i>
-          <input type="text" id="nombre" placeholder="Ej. Nicolás" required autocomplete="off">
-        </div>
+        <input type="text" id="nombre" placeholder="Ej. Nicolás" required>
       </div>
 
       <div class="form-group">
         <label for="apellido">Apellido(s)</label>
-        <div class="input-wrapper">
-          <i class="fa-solid fa-signature"></i>
-          <input type="text" id="apellido" placeholder="Ej. Castro" required autocomplete="off">
-        </div>
+        <input type="text" id="apellido" placeholder="Ej. Castro" required>
       </div>
 
-      <button type="submit" id="btnEnviar">
-        <i class="fa-solid fa-paper-plane"></i>
-        <span>Registrar Llegada</span>
-      </button>
+      <div class="form-group">
+        <label for="opcionSacramento">Sacramento / Motivo</label>
+        <select id="opcionSacramento" required>
+          <option value="" disabled selected>Selecciona una opción...</option>
+          <option value="Primera comunión">Primera comunión</option>
+          <option value="Confirmación">Confirmación</option>
+          <option value="Primera comunión y confirmación">Primera comunión y confirmación</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+
+      <div class="form-group hidden" id="campoOtroGrupo">
+        <label for="otroTexto">¿Qué estás haciendo?</label>
+        <input type="text" id="otroTexto" placeholder="Ej. Acompañante, Catequista, etc.">
+      </div>
+
+      <button type="submit" id="btnEnviar">Registrar Llegada</button>
     </form>
-    
-    <div id="mensaje" class="status"></div>
+
+    <div id="mensaje" class="status-msg"></div>
   </div>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzzszA6NNGfCUV8FoF4jM3jcy8xgAFCTctoWblOguIcUvWMVYHEugKXYehC2QrQBEpD/exec";
 
-    // Actualizador de reloj y fecha
+    // Actualiza la fecha y hora en vivo
     function actualizarReloj() {
       const ahora = new Date();
-      document.getElementById('fechaTexto').innerText = ahora.toLocaleDateString('es-CO', {
-        day: '2-digit', month: '2-digit', year: 'numeric'
-      });
-      document.getElementById('horaTexto').innerText = ahora.toLocaleTimeString('es-CO');
+      document.getElementById('lblFecha').innerText = ahora.toLocaleDateString('es-CO');
+      document.getElementById('lblHora').innerText = ahora.toLocaleTimeString('es-CO');
     }
-
     actualizarReloj();
     setInterval(actualizarReloj, 1000);
 
-    // Envío del formulario
-    document.getElementById('formLlegada').addEventListener('submit', async (e) => {
+    // Mostrar/Ocultar el campo personalizado cuando eligen "Otro"
+    const selectSacramento = document.getElementById('opcionSacramento');
+    const campoOtroGrupo = document.getElementById('campoOtroGrupo');
+    const otroTextoInput = document.getElementById('otroTexto');
+
+    selectSacramento.addEventListener('change', () => {
+      if (selectSacramento.value === 'Otro') {
+        campoOtroGrupo.classList.remove('hidden');
+        otroTextoInput.required = true;
+      } else {
+        campoOtroGrupo.classList.add('hidden');
+        otroTextoInput.required = false;
+        otroTextoInput.value = '';
+      }
+    });
+
+    // Enviar datos al script
+    document.getElementById('formRegistro').addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const btn = document.getElementById('btnEnviar');
       const mensaje = document.getElementById('mensaje');
-      
+
       const nombre = document.getElementById('nombre').value.trim();
       const apellido = document.getElementById('apellido').value.trim();
       
-      const payload = { 
-        nombreCompleto: `${nombre} ${apellido}` 
+      let motivo = selectSacramento.value;
+      if (motivo === 'Otro') {
+        motivo = otroTextoInput.value.trim();
+      }
+
+      const payload = {
+        nombreCompleto: `${nombre} ${apellido}`,
+        motivo: motivo
       };
 
-      // Estado de carga
       btn.disabled = true;
-      btn.querySelector('span').innerText = "Guardando...";
-      mensaje.className = "status loading";
-      mensaje.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando en Google Sheets...';
+      mensaje.className = "status-msg loading";
+      mensaje.innerText = "Guardando en Google Sheets...";
 
       try {
         const response = await fetch(SCRIPT_URL, {
@@ -298,20 +291,22 @@
         const data = await response.json();
 
         if (data.status === "success") {
-          mensaje.className = "status success";
-          mensaje.innerHTML = `<i class="fa-solid fa-circle-check"></i> <strong>¡Registrado con éxito!</strong><br>${data.nombre}<br><small>Fecha: ${data.fecha} | Hora: ${data.hora}</small>`;
-          document.getElementById('nombre').value = "";
-          document.getElementById('apellido').value = "";
+          mensaje.className = "status-msg success";
+          mensaje.innerText = `¡Registrado con éxito!\n\nNombre: ${data.nombre}\nMotivo: ${data.motivo}\nHora: ${data.hora}`;
+          
+          // Limpiar formulario
+          document.getElementById('formRegistro').reset();
+          campoOtroGrupo.classList.add('hidden');
+          otroTextoInput.required = false;
         } else {
-          mensaje.className = "status error";
-          mensaje.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Ocurrió un error al registrar.';
+          mensaje.className = "status-msg error";
+          mensaje.innerText = "Error al guardar el registro.";
         }
       } catch (err) {
-        mensaje.className = "status error";
-        mensaje.innerHTML = '<i class="fa-solid fa-wifi"></i> Error de conexión con el servidor.';
+        mensaje.className = "status-msg error";
+        mensaje.innerText = "Error de conexión con el servidor.";
       } finally {
         btn.disabled = false;
-        btn.querySelector('span').innerText = "Registrar Llegada";
       }
     });
   </script>
